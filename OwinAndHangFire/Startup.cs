@@ -25,6 +25,22 @@ namespace OwinAndHangFire
             app.UseWelcomePage("/");
             app.UseWebApi(config);
             app.UseErrorPage();
+
+            //hangfire的設定
+            var jobServerOptions = new BackgroundJobServerOptions()
+            {
+            };
+            app.UseHangfireServer(jobServerOptions);
+            //hangfire Dashborad
+            var dashboardOptions = new DashboardOptions
+            {
+                Authorization = new[]
+                {
+                    new DashboardAuthorizationFilter()
+                }
+            };
+            app.UseHangfireDashboard("/hangfire", dashboardOptions);
+
         }
 
     }
@@ -34,6 +50,7 @@ namespace OwinAndHangFire
         {
             GlobalConfiguration.Configuration
                                .UseSqlServerStorage("Server=.;Database=HangFire;User Id=sa;Password=1qaz@WSX;")
+                               .UseNLogLogProvider()
                                .UseConsole();
 
             app.UseHangfireDashboard("/hangfire");

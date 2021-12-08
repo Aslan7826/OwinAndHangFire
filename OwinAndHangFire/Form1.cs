@@ -1,4 +1,5 @@
 ﻿using Hangfire;
+using Hangfire.Storage;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,42 +20,48 @@ namespace OwinAndHangFire
         public Form1()
         {
             InitializeComponent();
-            play = 0;
-            ShowTextBox();
         }
         private void ShowTextBox()
         {
-            this.label1.Text = play.ToString();
+            this.label1.Text =  play.ToString();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Action action = () => { textBox1.Text = play.ToString() + '\n'; };
-            HangFireGo("Good", ()=>action()  );
-        }
-
-
-
-        private void HangFireGo(string name, Expression<Action> action)
-        {
-            ShowTextBox();
-            var cron = $"0/{this.textBox2.Text} * * * * ? ";
-            RecurringJob.AddOrUpdate($"{name}-DoJob{play}", action, cron);
-            play++;
+            HangFireGo("Good", "RunGood");
         }
         private void button2_Click(object sender, EventArgs e)
         {
-            HangFireGo("bad", () => Error());
+            HangFireGo("bad", "Error");
         }
-
+        public void RunGood()
+        {
+            Console.WriteLine($"{play}....");
+        }
         public void Error()
         {
             throw new Exception("reloadtext");
         }
-
-        private void button3_Click(object sender, EventArgs e)
+        private void HangFireGo(string name, string methodName)
         {
 
+            var myType = this.GetType();
+            var myMethodName = myType.GetMethod(methodName);
+            var myAction = Expression.Lambda<Action>(Expression.Call(Expression.New(myType), myMethodName));
+            play++;
+            ShowTextBox();
+            var cron = $"0/{this.textBox2.Text} * * * * ? ";
+            RecurringJob.AddOrUpdate($"{name}-{play}", myAction, cron);
+        }
+        private void button3_Click(object sender, EventArgs e)
+        {
+            using (var connection = JobStorage.Current.GetConnection())
+            {
+                foreach (var recurringJob in connection.GetRecurringJobs())
+                {
+                    RecurringJob.RemoveIfExists(recurringJob.Id);
+                }
+            }
         }
     }
 }

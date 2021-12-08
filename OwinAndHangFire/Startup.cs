@@ -29,7 +29,9 @@ namespace OwinAndHangFire
             //hangfire的設定
             var jobServerOptions = new BackgroundJobServerOptions()
             {
-            };
+                //排成器最低多久詢問一次
+                SchedulePollingInterval = new TimeSpan(0, 0, 2),
+            };                                               
             app.UseHangfireServer(jobServerOptions);
             //hangfire Dashborad
             var dashboardOptions = new DashboardOptions
@@ -52,6 +54,12 @@ namespace OwinAndHangFire
                                .UseSqlServerStorage("Server=.;Database=HangFire;User Id=sa;Password=1qaz@WSX;")
                                .UseNLogLogProvider()
                                .UseConsole();
+            GlobalJobFilters.Filters.Add( new AutomaticRetryAttribute 
+                    {
+                        Attempts = 2, 
+                        DelaysInSeconds = new[] { 10 , 10 }, 
+                        OnAttemptsExceeded = AttemptsExceededAction.Fail 
+                    });
 
             app.UseHangfireDashboard("/hangfire");
             app.UseHangfireServer();

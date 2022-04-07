@@ -30,7 +30,7 @@ namespace OwinAndHangFire
             var jobServerOptions = new BackgroundJobServerOptions()
             {
                 //排成器最低多久詢問一次
-                SchedulePollingInterval = new TimeSpan(0, 0, 2),
+                SchedulePollingInterval = new TimeSpan(0, 5, 0),
             };                                               
             app.UseHangfireServer(jobServerOptions);
             //hangfire Dashborad

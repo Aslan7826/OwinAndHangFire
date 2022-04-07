@@ -50,7 +50,7 @@ namespace OwinAndHangFire
             var myAction = Expression.Lambda<Action>(Expression.Call(Expression.New(myType), myMethodName));
             play++;
             ShowTextBox();
-            var cron = $"0/{this.textBox2.Text} * * * * ? ";
+            var cron = $"0 0/{this.textBox2.Text} * * * ? ";
             RecurringJob.AddOrUpdate($"{name}-{play}", myAction, cron);
         }
         private void button3_Click(object sender, EventArgs e)
